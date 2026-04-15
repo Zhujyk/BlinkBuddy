@@ -1,32 +1,20 @@
-//
-//  BlinkBuddyApp.swift
-//  BlinkBuddy
-//
-//  Created by Zhu on 15/04/2026.
-//
-
 import SwiftUI
-import SwiftData
 
 @main
 struct BlinkBuddyApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
+    // This connects your logic to your UI
+//    @StateObject private var timerManager = TimerManager()
 
     var body: some Scene {
-        WindowGroup {
-            ContentView()
+        // MenuBarExtra is the 'Main' scene for menu-bar-only apps
+        MenuBarExtra("BlinkBuddy", systemImage: "eye.fill") {
+            Button("Check Timer") {
+//                print("Timer is at: \(timerManager.timeElapsed)")
+            }
+            Divider()
+            Button("Quit BlinkBuddy") {
+                NSApplication.shared.terminate(nil)
+            }
         }
-        .modelContainer(sharedModelContainer)
     }
 }
