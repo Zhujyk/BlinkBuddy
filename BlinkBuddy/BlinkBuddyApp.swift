@@ -2,33 +2,35 @@ import SwiftUI
 
 @main
 struct BlinkBuddyApp: App {
-    @StateObject private var timerManager = TimerManager()
+    // This creates the manager and keeps it alive
+    @StateObject private var timerManager = TimerManager2()
 
     var body: some Scene {
         MenuBarExtra {
-            // This displays the current count in the dropdown menu
-            Text("Time active: \(timerManager.secondsElapsed)s")
-            
+            // --- DROPDOWN MENU ---
             if timerManager.showWaitAlert {
-                Text("⚠️ TAKE A BREAK!")
+                Text("🚨 BREAK TIME! 🚨")
+                    .fontWeight(.bold)
                     .foregroundColor(.red)
+            } else {
+                Text("Next break in: \(timerManager.secondsRemaining)s")
             }
-
+            
             Divider()
-
-            Button("Reset Timer") {
-                timerManager.resetTimer()
+            
+            Button("Start/Reset Timer") {
+                timerManager.startTimer()
             }
-
-            Button("Quit") {
+            
+            Button("Quit BlinkBuddy") {
                 NSApplication.shared.terminate(nil)
             }
+            
         } label: {
-            // This part changes the icon in the actual bar
+            // --- MENU BAR ICON ---
             HStack {
-                Image(systemName: "eye.fill")
-                // This shows the seconds right next to the eye!
-                Text("\(timerManager.secondsElapsed)")
+                Image(systemName: timerManager.showWaitAlert ? "eye.slash.fill" : "eye.fill")
+                Text("\(timerManager.secondsRemaining)s")
             }
         }
     }
