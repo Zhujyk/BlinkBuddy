@@ -2,36 +2,30 @@ import SwiftUI
 
 @main
 struct BlinkBuddyApp: App {
-    // This creates the manager and keeps it alive
-    @StateObject private var timerManager = TimerManager2()
+    private let isRunningTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+    private let runtime = BlinkBuddyRuntime(
+        isRunningTests: ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+    )
 
     var body: some Scene {
-        MenuBarExtra {
-            // --- DROPDOWN MENU ---
-            if timerManager.showWaitAlert {
-                Text("🚨 BREAK TIME! 🚨")
-                    .fontWeight(.bold)
-                    .foregroundColor(.red)
-            } else {
-                Text("Next break in: \(timerManager.secondsRemaining)s")
+        MenuBarExtra(isInserted: .constant(!isRunningTests)) {
+            if let breakEngine = runtime.breakEngine {
+                MenuBarView(
+                    breakEngine: breakEngine,
+                    quitAction: { NSApplication.shared.terminate(nil) }
+                )
             }
-            
-            Divider()
-            
-            Button("Start/Reset Timer") {
-                timerManager.startTimer()
-            }
-            
-            Button("Quit BlinkBuddy") {
-                NSApplication.shared.terminate(nil)
-            }
-            
         } label: {
-            // --- MENU BAR ICON ---
-            HStack {
-                Image(systemName: timerManager.showWaitAlert ? "eye.slash.fill" : "eye.fill")
-                Text("\(timerManager.secondsRemaining)s")
-            }
+            Image(systemName: runtime.breakEngine?.menuBarIconSystemName ?? "eye.fill")
         }
+    }
+}
+
+@MainActor
+private struct BlinkBuddyRuntime {
+    let breakEngine: BreakEngine?
+
+    init(isRunningTests: Bool) {
+        breakEngine = isRunningTests ? nil : BreakEngine()
     }
 }

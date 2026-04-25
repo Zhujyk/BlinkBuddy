@@ -1,26 +1,32 @@
-# 👁️ BlinkBuddy
+# BlinkBuddy
 
-**BlinkBuddy** is a minimalist macOS "Agent" app (menu-bar only) designed to combat digital eye strain. It tracks your active screen time and gently reminds you to look away, helping you follow the 20-20-20 rule (every 20 minutes, look at something 20 feet away for 20 seconds).
+BlinkBuddy is a lightweight macOS menu bar app that nudges the user toward the 20-20-20 rule without turning into a busy always-updating utility. The current implementation focuses on trustworthy core timing: count active screen time, pause when the user is away, and keep the menu bar presence quiet by default.
 
-## ✨ Features
-- **Zero Dock Clutter:** Runs entirely in the menu bar.
-- **Lightweight:** Built natively in Swift and SwiftUI for minimal CPU/RAM usage.
-- **Smart Tracking:** Uses system idle timers to know when you're actually at your desk.
-- **Non-Intrusive:** Designed to stay out of your way until it's time for a break.
+## Current Status
 
-## 🛠️ Architecture
-The project follows the **MVVM** (Model-View-ViewModel) pattern to keep logic and UI separate:
-- **App Layer:** Handles the menu bar lifecycle and background "Agent" status.
-- **Logic Layer (`TimerManager`):** Manages the countdowns using `Foundation.Timer` and `CoreGraphics` to monitor user activity.
-- **View Layer:** SwiftUI-based components for the menu dropdown and the "Look Away" overlay.
+- Menu-bar-only app shell using `MenuBarExtra` and `LSUIElement`
+- `BreakEngine` as the single source of truth for reminder state
+- `ActivityMonitor` for `NSWorkspace` lifecycle boundaries and sparse idle recovery checks
+- Extracted menu bar view with coarse state/actions instead of a permanent second-by-second countdown
+- Break reminder popup or notification delivery is still future work, so the current break prompt stays inside the menu experience
 
-## 🚀 Getting Started
+## Architecture
 
-### Prerequisites
-- macOS 13.0+
-- Xcode 15.0+
+- `BlinkBuddy/BlinkBuddyApp.swift`: boots the menu bar scene and owns one long-lived `BreakEngine`
+- `BlinkBuddy/Logic/BreakEngine.swift`: deadline-based state machine for `ready`, `tracking`, `idlePaused`, and `breakDue`
+- `BlinkBuddy/Logic/ActivityMonitor.swift`: lifecycle observation plus coarse idle validation
+- `BlinkBuddy/Views/MenuBarView.swift`: menu content and core actions
+- `BlinkBuddy/Views/BreakupPopupView.swift`: lightweight in-menu break prompt boundary while richer reminder UI is deferred
 
-### Installation
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/Zhujyk/BlinkBuddy.git
+## Build And Test
+
+```bash
+xcodebuild -project BlinkBuddy.xcodeproj -scheme BlinkBuddy -sdk macosx -derivedDataPath /tmp/BlinkBuddyDerived build
+xcodebuild -project BlinkBuddy.xcodeproj -scheme BlinkBuddyTests -sdk macosx -derivedDataPath /tmp/BlinkBuddyDerived test
+```
+
+## Product Notes
+
+- BlinkBuddy aims to count active work time, not naive wall-clock time.
+- The implementation avoids a permanent 1-second polling loop for normal operation.
+- All reminder logic is local to the Mac; there are no runtime network dependencies.

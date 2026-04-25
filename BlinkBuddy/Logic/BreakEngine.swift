@@ -6,7 +6,7 @@ protocol BreakScheduledTask: AnyObject {
 }
 
 protocol BreakDeadlineScheduling {
-    func schedule(after interval: TimeInterval, handler: @escaping @Sendable () -> Void) -> any BreakScheduledTask
+    func schedule(after interval: TimeInterval, handler: @escaping @MainActor () -> Void) -> any BreakScheduledTask
 }
 
 private final class DispatchSourceDeadlineTask: BreakScheduledTask {
@@ -32,11 +32,15 @@ private final class DispatchSourceDeadlineTask: BreakScheduledTask {
 struct DispatchSourceDeadlineScheduler: BreakDeadlineScheduling {
     nonisolated init() {}
 
-    nonisolated func schedule(after interval: TimeInterval, handler: @escaping @Sendable () -> Void) -> any BreakScheduledTask {
+    nonisolated func schedule(after interval: TimeInterval, handler: @escaping @MainActor () -> Void) -> any BreakScheduledTask {
         DispatchSourceDeadlineTask(
             interval: interval,
             queue: DispatchQueue(label: "BlinkBuddy.BreakEngine.Deadline", qos: .utility),
-            handler: handler
+            handler: {
+                Task { @MainActor in
+                    handler()
+                }
+            }
         )
     }
 }
@@ -135,12 +139,19 @@ final class BreakEngine: ObservableObject {
     }
 
     func stopTimer() {
+        shutdown()
+        state = .ready
+        publishCompatibilityState()
+    }
+
+    func shutdown() {
         cancelScheduledDeadline()
         activeTrackingStartedAt = nil
         accumulatedActiveTime = 0
+        showWaitAlert = false
         activityMonitor.endRecoveryMonitoring()
-        state = .ready
-        publishCompatibilityState()
+        activityMonitor.stop()
+        activityMonitor.onEvent = nil
     }
 
     func remainingActiveTime(referenceDate: Date? = nil) -> TimeInterval {
@@ -156,7 +167,7 @@ final class BreakEngine: ObservableObject {
         return max(0, breakInterval - accumulatedActiveTime - activeSlice)
     }
 
-    private func handleActivityEvent(_ event: ActivityEvent) {
+    func handleActivityEvent(_ event: ActivityEvent) {
         switch event {
         case .sessionDidResignActive:
             pauseTracking(for: .sessionInactive)
@@ -243,9 +254,7 @@ final class BreakEngine: ObservableObject {
         }
 
         scheduledDeadline = scheduler.schedule(after: remaining) { [weak self] in
-            Task { @MainActor [weak self] in
-                self?.handleDeadlineReached()
-            }
+            self?.handleDeadlineReached()
         }
 
         publishCompatibilityState(referenceDate: currentDate)
