@@ -170,7 +170,7 @@ final class BreakEngine: ObservableObject {
     func handleActivityEvent(_ event: ActivityEvent) {
         switch event {
         case .sessionDidResignActive:
-            pauseTracking(for: .sessionInactive)
+            publishCompatibilityState()
         case .screensDidSleep:
             pauseTracking(for: .systemSleep)
         case .didWake, .sessionDidBecomeActive:
@@ -184,7 +184,7 @@ final class BreakEngine: ObservableObject {
                     pauseTracking(for: .userIdle)
                 }
             case .sessionInactive:
-                pauseTracking(for: .sessionInactive)
+                publishCompatibilityState()
             case .sleeping:
                 pauseTracking(for: .systemSleep)
             }

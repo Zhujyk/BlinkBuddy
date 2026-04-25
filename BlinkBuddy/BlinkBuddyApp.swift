@@ -26,6 +26,6 @@ private struct BlinkBuddyRuntime {
     let breakEngine: BreakEngine?
 
     init(isRunningTests: Bool) {
-        breakEngine = isRunningTests ? nil : BreakEngine()
+        breakEngine = isRunningTests ? nil : BreakEngine(breakInterval: 10)
     }
 }

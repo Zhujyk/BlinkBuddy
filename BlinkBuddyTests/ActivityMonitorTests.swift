@@ -4,7 +4,7 @@ import XCTest
 
 @MainActor
 final class ActivityMonitorTests: XCTestCase {
-    func testWorkspaceNotificationsUpdateLifecycleStatus() async {
+    func testSleepNotificationsUpdateLifecycleStatus() async {
         let notificationCenter = NotificationCenter()
         let idleSeconds = LockedValue<TimeInterval>(0)
         let timerFactory = TestRepeatingTimerFactory()
@@ -24,22 +24,38 @@ final class ActivityMonitorTests: XCTestCase {
         idleSeconds.value = 90
         XCTAssertEqual(monitor.currentStatus(), .idle)
 
-        notificationCenter.post(name: NSWorkspace.sessionDidResignActiveNotification, object: nil)
-        await settleMainActor()
-        XCTAssertEqual(events.last, .sessionDidResignActive)
-        XCTAssertEqual(monitor.currentStatus(), .sessionInactive)
-
         notificationCenter.post(name: NSWorkspace.screensDidSleepNotification, object: nil)
         await settleMainActor()
         XCTAssertEqual(events.last, .screensDidSleep)
         XCTAssertEqual(monitor.currentStatus(), .sleeping)
 
         idleSeconds.value = 0
-        notificationCenter.post(name: NSWorkspace.sessionDidBecomeActiveNotification, object: nil)
         notificationCenter.post(name: NSWorkspace.didWakeNotification, object: nil)
         await settleMainActor()
-        XCTAssertTrue(events.contains(.sessionDidBecomeActive))
         XCTAssertEqual(events.last, .didWake)
+        XCTAssertEqual(monitor.currentStatus(), .active)
+    }
+
+    func testSessionSwitchNotificationsDoNotOverrideObservedActivity() async {
+        let notificationCenter = NotificationCenter()
+        let idleSeconds = LockedValue<TimeInterval>(0)
+        let timerFactory = TestRepeatingTimerFactory()
+        let monitor = ActivityMonitor(
+            workspaceNotificationCenter: notificationCenter,
+            idleThreshold: 60,
+            recoveryCheckInterval: 45,
+            idleTimeProvider: { idleSeconds.value },
+            repeatingTimerFactory: timerFactory.makeTask
+        )
+        var events: [ActivityEvent] = []
+        monitor.onEvent = { events.append($0) }
+
+        monitor.start()
+        notificationCenter.post(name: NSWorkspace.sessionDidResignActiveNotification, object: nil)
+        notificationCenter.post(name: NSWorkspace.sessionDidBecomeActiveNotification, object: nil)
+        await settleMainActor()
+
+        XCTAssertTrue(events.isEmpty)
         XCTAssertEqual(monitor.currentStatus(), .active)
     }
 

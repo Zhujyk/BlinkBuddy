@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A957D4462F9CBD5C00C013A3 /* .gitignore in Sources */ = {isa = PBXBuildFile; fileRef = A957D4452F9CBD4800C013A3 /* .gitignore */; };
 		B10000012F900001005E61E6 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B10000032F900001005E61E6 /* XCTest.framework */; };
 /* End PBXBuildFile section */
 
@@ -22,7 +21,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		A957D4452F9CBD4800C013A3 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		A991E4D82F8FE9F5005E61E6 /* BlinkBuddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BlinkBuddy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B10000022F900001005E61E6 /* BlinkBuddyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BlinkBuddyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B10000032F900001005E61E6 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = System/Library/Frameworks/XCTest.framework; sourceTree = SDKROOT; };
@@ -67,7 +65,6 @@
 				B10000042F900001005E61E6 /* BlinkBuddyTests */,
 				B100000E2F900001005E61E6 /* Frameworks */,
 				A991E4D92F8FE9F5005E61E6 /* Products */,
-				A957D4452F9CBD4800C013A3 /* .gitignore */,
 			);
 			sourceTree = "<group>";
 		};
@@ -204,7 +201,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A957D4462F9CBD5C00C013A3 /* .gitignore in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

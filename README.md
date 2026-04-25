@@ -22,7 +22,7 @@ BlinkBuddy is a lightweight macOS menu bar app that nudges the user toward the 2
 
 ```bash
 xcodebuild -project BlinkBuddy.xcodeproj -scheme BlinkBuddy -sdk macosx -derivedDataPath /tmp/BlinkBuddyDerived build
-xcodebuild -project BlinkBuddy.xcodeproj -scheme BlinkBuddyTests -sdk macosx -derivedDataPath /tmp/BlinkBuddyDerived test
+xcodebuild -project BlinkBuddy.xcodeproj -scheme BlinkBuddy -sdk macosx -derivedDataPath /tmp/BlinkBuddyDerived test
 ```
 
 ## Product Notes
@@ -30,3 +30,4 @@ xcodebuild -project BlinkBuddy.xcodeproj -scheme BlinkBuddyTests -sdk macosx -de
 - BlinkBuddy aims to count active work time, not naive wall-clock time.
 - The implementation avoids a permanent 1-second polling loop for normal operation.
 - All reminder logic is local to the Mac; there are no runtime network dependencies.
+- The current hosted macOS XCTest setup covers the activity monitor and break-due path; three `BreakEngine` cases are intentionally skipped while a test-host teardown crash is investigated.

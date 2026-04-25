@@ -76,7 +76,6 @@ final class ActivityMonitor: ActivityMonitoring {
     private let repeatingTimerFactory: RepeatingTimerFactory
     private var observers: [NSObjectProtocol] = []
     private var recoveryTimer: (any ActivityScheduledTask)?
-    private var sessionIsActive = true
     private var systemIsSleeping = false
     private var hasStarted = false
 
@@ -102,24 +101,6 @@ final class ActivityMonitor: ActivityMonitoring {
         hasStarted = true
 
         observers = [
-            workspaceNotificationCenter.addObserver(
-                forName: NSWorkspace.sessionDidResignActiveNotification,
-                object: nil,
-                queue: .main
-            ) { [weak self] _ in
-                Task { @MainActor [weak self] in
-                    self?.handleSessionDidResignActive()
-                }
-            },
-            workspaceNotificationCenter.addObserver(
-                forName: NSWorkspace.sessionDidBecomeActiveNotification,
-                object: nil,
-                queue: .main
-            ) { [weak self] _ in
-                Task { @MainActor [weak self] in
-                    self?.handleSessionDidBecomeActive()
-                }
-            },
             workspaceNotificationCenter.addObserver(
                 forName: NSWorkspace.screensDidSleepNotification,
                 object: nil,
@@ -172,22 +153,7 @@ final class ActivityMonitor: ActivityMonitoring {
             return .sleeping
         }
 
-        if !sessionIsActive {
-            return .sessionInactive
-        }
-
         return idleTimeProvider() >= idleThreshold ? .idle : .active
-    }
-
-    private func handleSessionDidResignActive() {
-        sessionIsActive = false
-        onEvent?(.sessionDidResignActive)
-    }
-
-    private func handleSessionDidBecomeActive() {
-        sessionIsActive = true
-        systemIsSleeping = false
-        onEvent?(.sessionDidBecomeActive)
     }
 
     private func handleScreensDidSleep() {
